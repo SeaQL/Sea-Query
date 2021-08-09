@@ -695,6 +695,18 @@ fn select_43() {
 }
 
 #[test]
+fn select_44() {
+    assert_eq!(
+        Query::select()
+            .column(Char::Character)
+            .from(Char::Table)
+            .and_where(Expr::col(Char::Character).like("A").escape('\\'))
+            .to_string(SqliteQueryBuilder),
+        r#"SELECT `character` FROM `character` WHERE `character` LIKE 'A' ESCAPE '\'"#
+    );
+}
+
+#[test]
 #[allow(clippy::approx_constant)]
 #[cfg(feature = "with-json")]
 fn insert_1() {
