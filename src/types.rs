@@ -99,6 +99,7 @@ pub enum BinOper {
     Sub,
     Mul,
     Div,
+    Escape,
 }
 
 /// Logical chain operator
