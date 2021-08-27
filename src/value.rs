@@ -96,6 +96,10 @@ pub trait IntoValueTuple {
     fn into_value_tuple(self) -> ValueTuple;
 }
 
+pub trait Nullable {
+    fn null() -> Value;
+}
+
 impl Value {
     pub fn unwrap<T>(self) -> T
     where
@@ -113,9 +117,9 @@ macro_rules! type_to_value {
             }
         }
 
-        impl From<Option<$type>> for Value {
-            fn from(x: Option<$type>) -> Value {
-                Value::$name(x)
+        impl Nullable for $type {
+            fn null() -> Value {
+                Value::$name(None)
             }
         }
 
@@ -140,25 +144,6 @@ macro_rules! type_to_value {
                 Default::default()
             }
         }
-
-        impl ValueType for Option<$type> {
-            fn unwrap(v: Value) -> Self {
-                match v {
-                    Value::$name(x) => x,
-                    _ => panic!("type error"),
-                }
-            }
-
-            fn type_name() -> &'static str {
-                concat!("Option<", stringify!($type), ">")
-            }
-        }
-
-        impl ValueTypeDefault for Option<$type> {
-            fn default() -> Self {
-                Default::default()
-            }
-        }
     };
 }
 
@@ -170,12 +155,9 @@ macro_rules! type_to_box_value {
             }
         }
 
-        impl From<Option<$type>> for Value {
-            fn from(x: Option<$type>) -> Value {
-                match x {
-                    Some(v) => Value::$name(Some(Box::new(v))),
-                    None => Value::$name(None),
-                }
+        impl Nullable for $type {
+            fn null() -> Value {
+                Value::$name(None)
             }
         }
 
@@ -189,26 +171,6 @@ macro_rules! type_to_box_value {
 
             fn type_name() -> &'static str {
                 stringify!($type)
-            }
-        }
-
-        impl ValueType for Option<$type> {
-            fn unwrap(v: Value) -> Self {
-                match v {
-                    Value::$name(Some(x)) => Some(*x),
-                    Value::$name(None) => None,
-                    _ => panic!("type error"),
-                }
-            }
-
-            fn type_name() -> &'static str {
-                concat!("Option<", stringify!($type), ">")
-            }
-        }
-
-        impl ValueTypeDefault for Option<$type> {
-            fn default() -> Self {
-                Default::default()
             }
         }
     };
@@ -246,6 +208,46 @@ impl<'a> From<&'a str> for Value {
     fn from(x: &'a str) -> Value {
         let string: String = x.into();
         Value::String(Some(Box::new(string)))
+    }
+}
+
+impl<'a> Nullable for &'a str {
+    fn null() -> Value {
+        Value::String(None)
+    }
+}
+
+impl<T> From<Option<T>> for Value
+where T: Into<Value> + Nullable {
+    fn from(x: Option<T>) -> Value {
+        match x {
+            Some(v) => v.into(),
+            None => T::null(),
+        }
+    }
+}
+
+impl<T> ValueType for Option<T>
+where T: ValueType + Nullable {
+    fn unwrap(v: Value) -> Self {
+        if v == T::null() {
+            None
+        }
+        else {
+            Some(v.unwrap())
+        }
+    }
+
+    fn type_name() -> &'static str {
+        //concat!("Option<", T::type_name(), ">")
+        T::type_name()
+    }
+}
+
+impl<T> ValueTypeDefault for Option<T>
+where T: ValueType + Nullable {
+    fn default() -> Self {
+        Default::default()
     }
 }
 
@@ -297,12 +299,6 @@ mod with_chrono {
         }
     }
 
-    impl ValueTypeDefault for Option<DateTime<FixedOffset>> {
-        fn default() -> Self {
-            Default::default()
-        }
-    }
-
     impl<Tz> From<DateTime<Tz>> for Value
     where
         Tz: TimeZone,
@@ -313,15 +309,9 @@ mod with_chrono {
         }
     }
 
-    impl<Tz> From<Option<DateTime<Tz>>> for Value
-    where
-        Tz: TimeZone,
-    {
-        fn from(x: Option<DateTime<Tz>>) -> Value {
-            match x {
-                Some(v) => From::<DateTime<Tz>>::from(v),
-                None => Value::DateTimeWithTimeZone(None),
-            }
+    impl Nullable for DateTime<FixedOffset> {
+        fn null() -> Value {
+            Value::DateTimeWithTimeZone(None)
         }
     }
 
@@ -335,19 +325,6 @@ mod with_chrono {
 
         fn type_name() -> &'static str {
             stringify!(DateTime<FixedOffset>)
-        }
-    }
-
-    impl ValueType for Option<DateTime<FixedOffset>> {
-        fn unwrap(v: Value) -> Self {
-            match v {
-                Value::DateTimeWithTimeZone(Some(x)) => Some(*x),
-                _ => panic!("type error"),
-            }
-        }
-
-        fn type_name() -> &'static str {
-            stringify!(Option<DateTime<FixedOffset>>)
         }
     }
 }
