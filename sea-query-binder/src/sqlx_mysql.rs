@@ -117,6 +117,9 @@ impl<'q> sqlx::IntoArguments<'q, sqlx::mysql::MySql> for SqlxValues {
                 Value::MacAddress(_) => {
                     panic!("Mysql doesn't support MacAddress arguments");
                 }
+                Value::CustomSqlx(value) => {
+                    value.0.add_mysql(&mut args);
+                }
             }
         }
         args

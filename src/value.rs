@@ -29,6 +29,9 @@ use std::net::IpAddr;
 #[cfg(feature = "with-mac_address")]
 use mac_address::MacAddress;
 
+#[cfg(feature = "sea-query-sqlx")]
+use sea_query_sqlx::SqlxValueTrait;
+
 use crate::{BlobSize, ColumnType, CommonSqlQueryBuilder, QueryBuilder};
 
 /// [`Value`] types variant for Postgres array
@@ -203,6 +206,9 @@ pub enum Value {
     #[cfg(feature = "with-mac_address")]
     #[cfg_attr(docsrs, doc(cfg(feature = "with-mac_address")))]
     MacAddress(Option<Box<MacAddress>>),
+
+    #[cfg(feature = "sea-query-sqlx")]
+    CustomSqlx(CustomSqlxValue),
 }
 
 impl std::fmt::Display for Value {
@@ -1391,6 +1397,18 @@ impl IntoIterator for Values {
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.into_iter()
+    }
+}
+
+#[cfg(feature = "sea-query-sqlx")]
+#[derive(Debug, Clone)]
+pub struct CustomSqlxValue(pub crate::SeaRc<dyn SqlxValueTrait>);
+
+#[cfg(feature = "sea-query-sqlx")]
+impl PartialEq for CustomSqlxValue {
+    fn eq(&self, other: &Self) -> bool {
+        #[allow(clippy::vtable_address_comparisons)]
+        crate::SeaRc::ptr_eq(&self.0, &other.0)
     }
 }
 

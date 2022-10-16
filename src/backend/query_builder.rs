@@ -1049,6 +1049,8 @@ pub trait QueryBuilder: QuotedBuilder + EscapeBuilder + TableRefBuilder {
             Value::IpNetwork(Some(v)) => write!(s, "'{}'", v).unwrap(),
             #[cfg(feature = "with-mac_address")]
             Value::MacAddress(Some(v)) => write!(s, "'{}'", v).unwrap(),
+            #[cfg(feature = "sea-query-sqlx")]
+            Value::CustomSqlx(v) => v.0.format_sql(&mut s).unwrap(),
         };
         s
     }

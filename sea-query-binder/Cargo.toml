@@ -1,5 +1,5 @@
 [workspace]
-# A separate workspace
+members = ["."]
 
 [package]
 name = "sea-query-binder"
@@ -18,6 +18,7 @@ rust-version = "1.60"
 
 [dependencies]
 sea-query = { version = "^0", path = "..", features = ["thread-safe"] }
+sea-query-sqlx = { version = "^0.1", path = "../sea-query-sqlx", optional = true }
 sqlx = { version = "^0.6.1", optional = true }
 serde_json = { version = "^1", optional = true }
 chrono = { version = "^0.4", default-features = false, features = ["clock"], optional = true }
@@ -32,9 +33,9 @@ ipnetwork = { version = "^0.19", optional = true }
 mac_address = { version = "^1.1", optional = true }
 
 [features]
-sqlx-mysql = ["sqlx/mysql"]
-sqlx-postgres = ["sqlx/postgres"]
-sqlx-sqlite = ["sqlx/sqlite"]
+sqlx-mysql = ["sqlx/mysql", "sea-query-sqlx", "sea-query/sea-query-sqlx"]
+sqlx-postgres = ["sqlx/postgres", "sea-query-sqlx", "sea-query/sea-query-sqlx"]
+sqlx-sqlite = ["sqlx/sqlite", "sea-query-sqlx", "sea-query/sea-query-sqlx"]
 sqlx-any = ["sqlx/any"]
 with-chrono = ["sqlx/chrono", "sea-query/with-chrono", "chrono"]
 with-json = ["sqlx/json", "sea-query/with-json", "serde_json"]

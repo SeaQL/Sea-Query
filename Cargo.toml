@@ -27,6 +27,7 @@ name = "sea_query"
 path = "src/lib.rs"
 
 [dependencies]
+sea-query-sqlx = { version = "^0.1", path = "sea-query-sqlx", optional = true }
 sea-query-attr = { version = "^0.1.1", path = "sea-query-attr", optional = true }
 sea-query-derive = { version = "^0.2.0", path = "sea-query-derive", optional = true }
 serde_json = { version = "^1", optional = true }

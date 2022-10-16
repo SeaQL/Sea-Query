@@ -129,6 +129,9 @@ impl<'q> sqlx::IntoArguments<'q, sqlx::postgres::Postgres> for SqlxValues {
                 Value::MacAddress(mac) => {
                     args.add(mac.as_deref());
                 }
+                Value::CustomSqlx(value) => {
+                    value.0.add_postgres(&mut args);
+                }
                 #[cfg(feature = "postgres-array")]
                 Value::Array(ty, v) => match ty {
                     ArrayType::Bool => {

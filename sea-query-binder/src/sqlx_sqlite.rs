@@ -117,6 +117,9 @@ impl<'q> sqlx::IntoArguments<'q, sqlx::sqlite::Sqlite> for SqlxValues {
                 Value::Array(_, _) => {
                     panic!("Sqlite doesn't support array arguments");
                 }
+                Value::CustomSqlx(value) => {
+                    value.0.add_sqlite(&mut args);
+                }
             }
         }
         args

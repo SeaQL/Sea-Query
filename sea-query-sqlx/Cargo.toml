@@ -1,0 +1,28 @@
+[package]
+name = "sea-query-sqlx"
+version = "0.1.0"
+authors = [ "Chris Tsang <tyt2y7@gmail.com>" ]
+edition = "2021"
+description = "SQLx traits for working with custom types"
+license = "MIT OR Apache-2.0"
+documentation = "https://docs.rs/sea-query"
+repository = "https://github.com/SeaQL/sea-query"
+categories = [ "database" ]
+keywords = [ "database", "sql", "mysql", "postgres", "sqlite" ]
+rust-version = "1.60"
+
+[lib]
+
+[dependencies]
+sqlx = { version = "^0.6" }
+
+[features]
+sqlx-mysql = ["sqlx/mysql"]
+sqlx-postgres = ["sqlx/postgres"]
+sqlx-sqlite = ["sqlx/sqlite"]
+runtime-async-std-native-tls = ["sqlx/runtime-async-std-native-tls"]
+runtime-async-std-rustls = ["sqlx/runtime-async-std-rustls", ]
+runtime-actix-native-tls = ["sqlx/runtime-actix-native-tls"]
+runtime-actix-rustls = ["sqlx/runtime-actix-rustls"]
+runtime-tokio-native-tls = ["sqlx/runtime-tokio-native-tls"]
+runtime-tokio-rustls = ["sqlx/runtime-tokio-rustls"]
