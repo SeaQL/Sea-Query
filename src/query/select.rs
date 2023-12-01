@@ -2380,3 +2380,9 @@ impl ConditionalStatement for SelectStatement {
     pub fn and_where_option(&mut self, other: Option<SimpleExpr>) -> &mut Self;
     pub fn and_where(&mut self, other: SimpleExpr) -> &mut Self;
 }
+
+impl IntoSimpleExpr for SelectStatement {
+    fn into_sub_query_expr(self) -> SimpleExpr {
+        SimpleExpr::SubQuery(None, Box::new(self.into_sub_query_statement()))
+    }
+}

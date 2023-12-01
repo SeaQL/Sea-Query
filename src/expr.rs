@@ -37,6 +37,10 @@ pub enum SimpleExpr {
     Constant(Value),
 }
 
+pub trait IntoSimpleExpr {
+    fn into_sub_query_expr(self) -> SimpleExpr;
+}
+
 pub(crate) mod private {
     use crate::{BinOper, LikeExpr, SimpleExpr, UnOper};
 

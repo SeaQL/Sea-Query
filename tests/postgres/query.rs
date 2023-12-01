@@ -1,6 +1,7 @@
 use super::*;
 use pretty_assertions::assert_eq;
 use sea_query::extension::postgres::PgBinOper;
+use sea_query::Value;
 
 #[test]
 fn select_1() {
@@ -103,7 +104,7 @@ fn select_8() {
             .from(Char::Table)
             .left_join(
                 Font::Table,
-                Expr::col((Char::Table, Char::FontId)).equals((Font::Table, Font::Id))
+                Expr::col((Char::Table, Char::FontId)).equals((Font::Table, Font::Id)),
             )
             .to_string(PostgresQueryBuilder),
         r#"SELECT "character" FROM "character" LEFT JOIN "font" ON "character"."font_id" = "font"."id""#
@@ -1093,6 +1094,27 @@ fn select_62() {
 }
 
 #[test]
+fn select_coalesce() {
+    let query = Query::select()
+        .expr(Func::coalesce([
+            Query::select()
+                .from(Char::Table)
+                .expr(Func::count(Expr::col(Character::Id)))
+                .take()
+                .into_sub_query_expr(),
+            1.into(),
+            Value::Bool(None).into(),
+        ]))
+        .from(Char::Table)
+        .to_owned();
+
+    assert_eq!(
+        query.to_string(PostgresQueryBuilder),
+        r#"SELECT COALESCE((SELECT COUNT("id") FROM "character"), 1, NULL) FROM "character""#
+    );
+}
+
+#[test]
 #[allow(clippy::approx_constant)]
 fn insert_2() {
     assert_eq!(
@@ -1467,6 +1489,32 @@ fn insert_returning_specific_columns() {
             .returning(Query::returning().columns([Glyph::Id, Glyph::Image]))
             .to_string(PostgresQueryBuilder),
         r#"INSERT INTO "glyph" ("image", "aspect") VALUES ('04108048005887010020060000204E0180400400', 3.1415) RETURNING "id", "image""#
+    );
+}
+
+#[test]
+fn insert_coalesce() {
+    assert_eq!(Query::insert()
+                   .into_table(Glyph::Table)
+                   .columns([Glyph::Image, Glyph::Aspect])
+                   .values_panic([
+                       "04108048005887010020060000204E0180400400".into(),
+                       Func::coalesce([Query::select()
+                           .from(Glyph::Table)
+                           .expr(Func::max(Expr::col(Glyph::Aspect)))
+                           .take()
+                           .into_sub_query_expr(),
+                           1.into(),
+                           Value::Bool(None).into(),
+                       ])
+                           .into(),
+                   ])
+                   .to_string(PostgresQueryBuilder),
+               [
+                   r#"INSERT INTO "glyph" ("image", "aspect")"#,
+                   r#"VALUES ('04108048005887010020060000204E0180400400', COALESCE((SELECT MAX("aspect") FROM "glyph"), 1, NULL))"#,
+               ]
+                   .join(" ")
     );
 }
 

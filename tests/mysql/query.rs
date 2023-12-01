@@ -1002,6 +1002,27 @@ fn select_58() {
 }
 
 #[test]
+fn select_coalesce() {
+    let query = Query::select()
+        .expr(Func::coalesce([
+            Query::select()
+                .from(Char::Table)
+                .expr(Func::max(Expr::col(Character::Id)))
+                .take()
+                .into_sub_query_expr(),
+            1.into(),
+            Value::Bool(None).into(),
+        ]))
+        .from(Char::Table)
+        .to_owned();
+
+    assert_eq!(
+        query.to_string(MysqlQueryBuilder),
+        r#"SELECT COALESCE((SELECT MAX(`id`) FROM `character`), 1, NULL) FROM `character`"#
+    );
+}
+
+#[test]
 #[allow(clippy::approx_constant)]
 fn insert_2() {
     assert_eq!(
@@ -1321,6 +1342,32 @@ fn insert_on_conflict_6() {
             r#"ON DUPLICATE KEY UPDATE `aspect` = VALUES(`aspect`), `image` = 1 + 2"#,
         ]
         .join(" ")
+    );
+}
+
+#[test]
+fn insert_coalesce() {
+    assert_eq!(Query::insert()
+                   .into_table(Glyph::Table)
+                   .columns([Glyph::Image, Glyph::Aspect])
+                   .values_panic([
+                       "04108048005887010020060000204E0180400400".into(),
+                       Func::coalesce([Query::select()
+                           .from(Glyph::Table)
+                           .expr(Func::max(Expr::col(Glyph::Aspect)))
+                           .take()
+                           .into_sub_query_expr(),
+                           1.into(),
+                           Value::Bool(None).into(),
+                       ])
+                           .into(),
+                   ])
+                   .to_string(MysqlQueryBuilder),
+               [
+                   r#"INSERT INTO `glyph` (`image`, `aspect`)"#,
+                   r#"VALUES ('04108048005887010020060000204E0180400400', COALESCE((SELECT MAX(`aspect`) FROM `glyph`), 1, NULL))"#,
+               ]
+                   .join(" ")
     );
 }
 
