@@ -3,6 +3,7 @@ pub(crate) mod foreign_key;
 pub(crate) mod index;
 pub(crate) mod query;
 pub(crate) mod table;
+pub(crate) mod trigger;
 pub(crate) mod types;
 
 use super::*;
