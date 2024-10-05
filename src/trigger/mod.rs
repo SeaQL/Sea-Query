@@ -1,4 +1,4 @@
-use crate::{Iden, IntoTableRef, SchemaBuilder, SeaRc, TableRef};
+use crate::{Iden, IntoTableRef, SchemaBuilder, SeaRc, SimpleExpr, TableRef};
 use std::fmt;
 
 mod create;
@@ -72,15 +72,20 @@ pub trait Configurable {
     }
 }
 
+pub type TriggerAction = SimpleExpr;
+pub type TriggerActions = Vec<TriggerAction>;
+
 #[derive(Default, Debug, Clone)]
 pub struct NamedTrigger {
-    pub(crate) name: TriggerRef
+    pub(crate) name: TriggerRef,
+    pub(crate) actions: TriggerActions,
 }
 
 impl NamedTrigger {
     pub fn new<T: Into<TriggerRef>>(name: T) -> NamedTrigger {
         Self {
-            name: name.into()
+            name: name.into(),
+            actions: vec![],
         }
     }
 }
@@ -107,29 +112,25 @@ impl Configurable for NamedTrigger {
             table: table,
             event: event,
             time: time,
+            actions: self.actions.clone(),
         }
     }
 }
 
 #[derive(Default, Debug, Clone)]
 pub struct UnnamedTrigger {
-    pub(crate) table: Option<TableRef>,
-    pub(crate) event: Option<TriggerEvent>,
-    pub(crate) time: Option<TriggerActionTime>,
+    pub actions: TriggerActions,
 }
 
 impl UnnamedTrigger {
     pub fn new() -> UnnamedTrigger {
-        Self {
-            table: None,
-            event: None,
-            time: None,
-        }
+        Self { actions: vec![] }
     }
     // an unnamed trigger can become a named one
     pub fn name<T: Into<TriggerRef>>(&self, name: T) -> NamedTrigger {
         NamedTrigger {
-            name: name.into()
+            name: name.into(),
+            actions: self.actions.clone(),
         }
     }
 }
@@ -146,6 +147,7 @@ impl Configurable for UnnamedTrigger {
             table: table,
             event: event,
             time: time,
+            actions: self.actions.clone(),
         }
     }
 }
@@ -156,6 +158,7 @@ pub struct DefinedTrigger {
     pub(crate) table: TableRef,
     pub(crate) event: TriggerEvent,
     pub(crate) time: TriggerActionTime,
+    pub(crate) actions: TriggerActions,
 }
 
 impl Referencable for DefinedTrigger {

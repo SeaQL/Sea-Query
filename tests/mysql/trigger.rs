@@ -18,7 +18,7 @@ fn create_unnamed_trigger() {
         [
             "CREATE TRIGGER `t_glyph_before_insert`",
             "BEFORE INSERT ON `glyph`",
-            "FOR EACH ROW\nBEGIN\n\nEND",
+            "FOR EACH ROW\nBEGIN\nEND",
         ]
         .join(" ")
     );
@@ -35,7 +35,7 @@ fn create_named_trigger() {
         [
             "CREATE TRIGGER `my_trigger`",
             "BEFORE INSERT ON `glyph`",
-            "FOR EACH ROW\nBEGIN\n\nEND",
+            "FOR EACH ROW\nBEGIN\nEND",
         ]
         .join(" ")
     );
@@ -56,5 +56,25 @@ fn drop_unnamed_trigger() {
     assert_eq!(
         trigger.drop().to_string(MysqlQueryBuilder),
         "DROP TRIGGER `t_glyph_before_delete`"
+    );
+}
+
+#[test]
+fn trigger_actions() {
+    let mut trigger = UnnamedTrigger::new();
+    trigger.actions.push(Expr::col(Glyph::Id).eq(1));
+
+    assert_eq!(
+        trigger
+            .before_insert(Glyph::Table)
+            .create()
+            .to_string(MysqlQueryBuilder),
+        [
+            "CREATE TRIGGER `t_glyph_before_insert` BEFORE INSERT ON `glyph` FOR EACH ROW",
+            "BEGIN",
+            "`id` = 1;",
+            "END"
+        ]
+        .join("\n")
     );
 }
