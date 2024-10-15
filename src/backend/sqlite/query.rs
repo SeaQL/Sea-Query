@@ -84,6 +84,12 @@ impl QueryBuilder for SqliteQueryBuilder {
         "MIN"
     }
 
+    fn prepare_exception_statement(&self, exception: &ExceptionStatement, sql: &mut dyn SqlWriter) {
+        let mut quoted_exception_message = String::new();
+        self.write_string_quoted(&exception.message, &mut quoted_exception_message);
+        write!(sql, "SELECT RAISE(ABORT, {})", quoted_exception_message).unwrap();
+    }
+
     fn char_length_function(&self) -> &str {
         "LENGTH"
     }
