@@ -107,6 +107,7 @@ pub trait TableBuilder:
             }
             ColumnSpec::Extra(string) => write!(sql, "{string}").unwrap(),
             ColumnSpec::Comment(comment) => self.column_comment(comment, sql),
+            ColumnSpec::Using(_) => {}
         }
     }
 

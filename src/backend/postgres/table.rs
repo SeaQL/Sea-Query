@@ -143,7 +143,9 @@ impl TableBuilder for PostgresQueryBuilder {
                         if !first
                             && !matches!(
                                 column_spec,
-                                ColumnSpec::AutoIncrement | ColumnSpec::Generated { .. }
+                                ColumnSpec::AutoIncrement
+                                    | ColumnSpec::Generated { .. }
+                                    | ColumnSpec::Using(_)
                             )
                         {
                             write!(sql, ", ").unwrap();
@@ -180,6 +182,10 @@ impl TableBuilder for PostgresQueryBuilder {
                             ColumnSpec::Generated { .. } => {}
                             ColumnSpec::Extra(string) => write!(sql, "{string}").unwrap(),
                             ColumnSpec::Comment(_) => {}
+                            ColumnSpec::Using(expr) => {
+                                write!(sql, " USING ").unwrap();
+                                QueryBuilder::prepare_simple_expr(self, expr, sql);
+                            }
                         }
                         false
                     });

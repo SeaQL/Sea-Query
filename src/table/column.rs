@@ -180,6 +180,7 @@ pub enum ColumnSpec {
     Generated { expr: SimpleExpr, stored: bool },
     Extra(String),
     Comment(String),
+    Using(SimpleExpr),
 }
 
 // All interval fields
@@ -718,6 +719,34 @@ impl ColumnDef {
         T: Into<String>,
     {
         self.spec.push(ColumnSpec::Extra(string.into()));
+        self
+    }
+
+    /// Some extra options in custom string
+    /// ```
+    /// use sea_query::{tests_cfg::*, *};
+    /// let table = Table::alter()
+    ///     .table(Char::Table)
+    ///     .modify_column(
+    ///         ColumnDef::new(Char::Id)
+    ///             .integer()
+    ///             .using(Expr::col(Char::Id).cast_as(Alias::new("integer"))),
+    ///     )
+    ///     .to_owned();
+    /// assert_eq!(
+    ///     table.to_string(PostgresQueryBuilder),
+    ///     [
+    ///         r#"ALTER TABLE "character""#,
+    ///         r#"ALTER COLUMN "id" TYPE integer USING CAST("id" AS integer)"#,
+    ///     ]
+    ///     .join(" ")
+    /// );
+    /// ```
+    pub fn using<T>(&mut self, value: T) -> &mut Self
+    where
+        T: Into<SimpleExpr>,
+    {
+        self.spec.push(ColumnSpec::Using(value.into()));
         self
     }
 
