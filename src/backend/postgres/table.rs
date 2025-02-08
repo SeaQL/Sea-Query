@@ -82,6 +82,7 @@ impl TableBuilder for PostgresQueryBuilder {
                 ColumnType::MacAddr => "macaddr".into(),
                 ColumnType::Year => unimplemented!("Year is not available in Postgres."),
                 ColumnType::LTree => "ltree".into(),
+                ColumnType::Hstore => "hstore".into(),
             }
         )
         .unwrap()

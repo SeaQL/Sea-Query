@@ -192,6 +192,7 @@ impl SqliteQueryBuilder {
                 ColumnType::Bit(_) => unimplemented!("Bit is not available in Sqlite."),
                 ColumnType::VarBit(_) => unimplemented!("VarBit is not available in Sqlite."),
                 ColumnType::LTree => unimplemented!("LTree is not available in Sqlite."),
+                ColumnType::Hstore => unimplemented!("Hstore is not available in Sqlite."),
             }
         )
         .unwrap()

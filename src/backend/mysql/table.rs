@@ -95,6 +95,7 @@ impl TableBuilder for MysqlQueryBuilder {
                 ColumnType::Inet => unimplemented!("Inet is not available in MySQL."),
                 ColumnType::MacAddr => unimplemented!("MacAddr is not available in MySQL."),
                 ColumnType::LTree => unimplemented!("LTree is not available in MySQL."),
+                ColumnType::Hstore => unimplemented!("Hstore is not available in MySQL."),
             }
         )
         .unwrap();

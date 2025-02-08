@@ -55,6 +55,7 @@ pub trait IntoColumnDef {
 /// | Inet                  | N/A               | inet                        | N/A                          |
 /// | MacAddr               | N/A               | macaddr                     | N/A                          |
 /// | LTree                 | N/A               | ltree                       | N/A                          |
+/// | Hstore                | N/A               | hstore                      | N/A                          |
 #[non_exhaustive]
 #[derive(Debug, Clone)]
 pub enum ColumnType {
@@ -100,6 +101,7 @@ pub enum ColumnType {
     Inet,
     MacAddr,
     LTree,
+    Hstore,
 }
 
 /// Length for var-char/binary; default to 255
@@ -643,6 +645,37 @@ impl ColumnDef {
     /// ```
     pub fn ltree(&mut self) -> &mut Self {
         self.types = Some(ColumnType::LTree);
+        self
+    }
+
+    /// Set column type as `hstore`
+    /// This is only supported on Postgres.
+    ///
+    /// ```
+    /// use sea_query::{tests_cfg::*, *};
+    /// assert_eq!(
+    ///     Table::create()
+    ///         .table(Glyph::Table)
+    ///         .col(
+    ///             ColumnDef::new(Glyph::Id)
+    ///                 .integer()
+    ///                 .not_null()
+    ///                 .auto_increment()
+    ///                 .primary_key()
+    ///         )
+    ///         .col(ColumnDef::new(Glyph::Tokens).hstore())
+    ///         .to_string(PostgresQueryBuilder),
+    ///     [
+    ///         r#"CREATE TABLE "glyph" ("#,
+    ///         r#""id" serial NOT NULL PRIMARY KEY,"#,
+    ///         r#""tokens" hstore"#,
+    ///         r#")"#,
+    ///     ]
+    ///     .join(" ")
+    /// );
+    /// ```
+    pub fn hstore(&mut self) -> &mut Self {
+        self.types = Some(ColumnType::Hstore);
         self
     }
 
