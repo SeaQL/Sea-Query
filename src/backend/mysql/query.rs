@@ -140,6 +140,17 @@ impl QueryBuilder for MysqlQueryBuilder {
 
     fn prepare_returning(&self, _returning: &Option<ReturningClause>, _sql: &mut dyn SqlWriter) {}
 
+    fn prepare_exception_statement(&self, exception: &ExceptionStatement, sql: &mut dyn SqlWriter) {
+        let mut quoted_exception_message = String::new();
+        self.write_string_quoted(&exception.message, &mut quoted_exception_message);
+        write!(
+            sql,
+            "SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = {}",
+            quoted_exception_message
+        )
+        .unwrap();
+    }
+
     fn random_function(&self) -> &str {
         "RAND"
     }

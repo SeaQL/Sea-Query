@@ -387,6 +387,9 @@ pub trait QueryBuilder:
             SimpleExpr::Constant(val) => {
                 self.prepare_constant(val, sql);
             }
+            SimpleExpr::Exception(val) => {
+                self.prepare_exception_statement(val, sql);
+            }
         }
     }
 
@@ -980,6 +983,15 @@ pub trait QueryBuilder:
             Keyword::CurrentTimestamp => write!(sql, "CURRENT_TIMESTAMP").unwrap(),
             Keyword::Custom(iden) => iden.unquoted(sql.as_writer()),
         }
+    }
+
+    // Translate [`Exception`] into SQL statement.
+    fn prepare_exception_statement(
+        &self,
+        _exception: &ExceptionStatement,
+        _sql: &mut dyn SqlWriter,
+    ) {
+        panic!("Exception handling not implemented for this backend");
     }
 
     /// Convert a SQL value into syntax-specific string

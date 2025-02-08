@@ -153,6 +153,12 @@ impl QueryBuilder for PostgresQueryBuilder {
         sql.push_param(value.clone(), self as _);
     }
 
+    fn prepare_exception_statement(&self, exception: &ExceptionStatement, sql: &mut dyn SqlWriter) {
+        let mut quoted_exception_message = String::new();
+        self.write_string_quoted(&exception.message, &mut quoted_exception_message);
+        write!(sql, "RAISE EXCEPTION {}", quoted_exception_message).unwrap();
+    }
+
     fn write_string_quoted(&self, string: &str, buffer: &mut String) {
         let escaped = self.escape_string(string);
         let string = if escaped.find('\\').is_some() {

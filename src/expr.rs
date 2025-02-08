@@ -4,7 +4,7 @@
 //!
 //! [`SimpleExpr`] is the expression common among select fields, where clauses and many other places.
 
-use crate::{func::*, query::*, types::*, value::*};
+use crate::{exception::ExceptionStatement, func::*, query::*, types::*, value::*};
 
 /// Helper to build a [`SimpleExpr`].
 #[derive(Debug, Clone)]
@@ -35,6 +35,7 @@ pub enum SimpleExpr {
     AsEnum(DynIden, Box<SimpleExpr>),
     Case(Box<CaseStatement>),
     Constant(Value),
+    Exception(ExceptionStatement),
 }
 
 /// "Operator" methods for building complex expressions.

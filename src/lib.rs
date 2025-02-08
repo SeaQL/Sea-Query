@@ -814,6 +814,7 @@
 
 pub mod backend;
 pub mod error;
+pub mod exception;
 pub mod expr;
 pub mod extension;
 pub mod foreign_key;
@@ -832,6 +833,7 @@ pub mod value;
 pub mod tests_cfg;
 
 pub use backend::*;
+pub use exception::*;
 pub use expr::*;
 pub use foreign_key::*;
 pub use func::*;
