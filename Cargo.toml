@@ -49,6 +49,7 @@ pretty_assertions = { version = "1" }
 
 [features]
 # STUB
+backend-databend = []
 backend-mysql = []
 backend-postgres = []
 backend-sqlite = []
@@ -119,6 +120,11 @@ required-features = ["tests-cfg", "backend-postgres"]
 name = "test-sqlite"
 path = "tests/sqlite/mod.rs"
 required-features = ["tests-cfg", "backend-sqlite"]
+
+[[test]]
+name = "test-databend"
+path = "tests/databend/mod.rs"
+required-features = ["tests-cfg", "backend-databend"]
 
 [[test]]
 name = "option-more-parentheses"

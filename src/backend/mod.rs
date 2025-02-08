@@ -2,6 +2,9 @@
 
 use crate::*;
 
+#[cfg(feature = "backend-databend")]
+#[cfg_attr(docsrs, doc(cfg(feature = "backend-databend")))]
+pub mod databend;
 #[cfg(feature = "backend-mysql")]
 #[cfg_attr(docsrs, doc(cfg(feature = "backend-mysql")))]
 mod mysql;
@@ -12,6 +15,8 @@ mod postgres;
 #[cfg_attr(docsrs, doc(cfg(feature = "backend-sqlite")))]
 mod sqlite;
 
+#[cfg(feature = "backend-databend")]
+pub use databend::*;
 #[cfg(feature = "backend-mysql")]
 pub use mysql::*;
 #[cfg(feature = "backend-postgres")]
