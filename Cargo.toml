@@ -42,17 +42,28 @@ ipnetwork = { version = "0.20", default-features = false, optional = true }
 mac_address = { version = "1.1", default-features = false, optional = true }
 ordered-float = { version = "3.4", default-features = false, optional = true }
 
+[dependencies.r2d2-oracle] # override
+git = "https://github.com/Niedzwiedzw/r2d2-oracle"
+features = ["chrono"]
+optional = true
+
 [dev-dependencies]
 sea-query = { path = ".", features = ["tests-cfg"] }
 criterion = { version = "0.3" }
 pretty_assertions = { version = "1" }
+
+
 
 [features]
 # STUB
 backend-mysql = []
 backend-postgres = []
 backend-sqlite = []
-default = ["derive", "backend-mysql", "backend-postgres", "backend-sqlite"]
+backend-oracle = ["oracle-overrides"]
+
+oracle-overrides = ["r2d2-oracle", "with-chrono"]
+
+default = ["derive", "backend-mysql", "backend-postgres", "backend-sqlite", "backend-oracle"]
 derive = ["sea-query-derive"]
 attr = ["sea-query-derive"]
 hashable-value = ["ordered-float"]
@@ -124,6 +135,11 @@ required-features = ["tests-cfg", "backend-sqlite"]
 name = "option-more-parentheses"
 path = "tests/more-parentheses.rs"
 required-features = ["tests-cfg", "option-more-parentheses", "backend-mysql"]
+
+[[test]]
+name = "test-oracle"
+path = "tests/oracle/mod.rs"
+required-features = ["backend-oracle"]
 
 [[bench]]
 name = "basic"

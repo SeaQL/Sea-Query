@@ -5,6 +5,9 @@ use crate::*;
 #[cfg(feature = "backend-mysql")]
 #[cfg_attr(docsrs, doc(cfg(feature = "backend-mysql")))]
 mod mysql;
+#[cfg(feature = "backend-oracle")]
+#[cfg_attr(docsrs, doc(cfg(feature = "backend-oracle")))]
+mod oracle;
 #[cfg(feature = "backend-postgres")]
 #[cfg_attr(docsrs, doc(cfg(feature = "backend-postgres")))]
 mod postgres;
@@ -14,6 +17,8 @@ mod sqlite;
 
 #[cfg(feature = "backend-mysql")]
 pub use mysql::*;
+#[cfg(feature = "backend-oracle")]
+pub use oracle::*;
 #[cfg(feature = "backend-postgres")]
 pub use postgres::*;
 #[cfg(feature = "backend-sqlite")]
