@@ -54,6 +54,18 @@ fn create_4() {
 }
 
 #[test]
+fn create_without_name() {
+    assert_eq!(
+        Index::create()
+            .index_type(IndexType::Hash)
+            .table(Glyph::Table)
+            .col(Glyph::Image)
+            .to_string(MysqlQueryBuilder),
+        "CREATE INDEX `idx-image` ON `glyph` (`image`) USING HASH"
+    );
+}
+
+#[test]
 fn drop_1() {
     assert_eq!(
         Index::drop()

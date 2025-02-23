@@ -1,5 +1,7 @@
 use super::*;
 
+const MYSQL_IDENTIFIER_NAME_MAX_LENGTH: usize = 64;
+
 impl IndexBuilder for MysqlQueryBuilder {
     fn prepare_table_index_expression(
         &self,
@@ -37,16 +39,16 @@ impl IndexBuilder for MysqlQueryBuilder {
         self.prepare_index_prefix(create, sql);
         write!(sql, "INDEX ").unwrap();
 
-        if let Some(name) = &create.index.name {
-            write!(
-                sql,
-                "{}{}{}",
-                self.quote().left(),
-                name,
-                self.quote().right()
-            )
-            .unwrap();
-        }
+        let mut name = create.get_name();
+        name.truncate(MYSQL_IDENTIFIER_NAME_MAX_LENGTH);
+        write!(
+            sql,
+            "{}{}{}",
+            self.quote().left(),
+            name,
+            self.quote().right()
+        )
+        .unwrap();
 
         write!(sql, " ON ").unwrap();
         if let Some(table) = &create.table {

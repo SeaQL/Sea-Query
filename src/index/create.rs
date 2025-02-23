@@ -313,6 +313,20 @@ impl IndexCreateStatement {
         &self.index
     }
 
+    pub(crate) fn get_name(&self) -> String {
+        if let Some(name) = self.index.name.clone() {
+            return name;
+        }
+        let prefix = if self.is_primary_key() {
+            "pri"
+        } else if self.is_unique_key() {
+            "uni"
+        } else {
+            "idx"
+        };
+        format!("{}-{}", prefix, self.index.get_column_names().join("-"))
+    }
+
     pub fn take(&mut self) -> Self {
         Self {
             table: self.table.take(),
