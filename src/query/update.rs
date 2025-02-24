@@ -1,3 +1,5 @@
+use inherent::inherent;
+
 use crate::{
     backend::QueryBuilder,
     expr::*,
@@ -8,7 +10,6 @@ use crate::{
     QueryStatementBuilder, QueryStatementWriter, ReturningClause, SubQueryStatement, WithClause,
     WithQuery,
 };
-use inherent::inherent;
 
 /// Update existing rows in the table
 ///
@@ -39,6 +40,7 @@ use inherent::inherent;
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct UpdateStatement {
     pub(crate) table: Option<Box<TableRef>>,
+    pub(crate) from: Vec<TableRef>,
     pub(crate) values: Vec<(DynIden, Box<SimpleExpr>)>,
     pub(crate) r#where: ConditionHolder,
     pub(crate) orders: Vec<OrderExpr>,
@@ -64,6 +66,49 @@ impl UpdateStatement {
         T: IntoTableRef,
     {
         self.table = Some(Box::new(tbl_ref.into_table_ref()));
+        self
+    }
+
+    /// From table.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use sea_query::{tests_cfg::*, *};
+    ///
+    /// let query = Query::update()
+    ///     .table(Glyph::Table)
+    ///     .value(Glyph::Tokens, Expr::column((Char::Table, Char::Character)))
+    ///     .from(Char::Table)
+    ///     .cond_where(
+    ///         Expr::col((Glyph::Table, Glyph::Image))
+    ///             .eq(Expr::col((Char::Table, Char::UserData))),
+    ///     )
+    ///     .to_owned();
+    ///
+    /// assert_eq!(
+    ///     query.to_string(MysqlQueryBuilder),
+    ///     "UPDATE `glyph` JOIN `character` ON `glyph`.`image` = `character`.`user_data` SET `glyph`.`tokens` = `character`.`character`"
+    /// );
+    /// assert_eq!(
+    ///     query.to_string(PostgresQueryBuilder),
+    ///     r#"UPDATE "glyph" SET "tokens" = "character"."character" FROM "character" WHERE "glyph"."image" = "character"."user_data""#
+    /// );
+    /// assert_eq!(
+    ///     query.to_string(SqliteQueryBuilder),
+    ///     r#"UPDATE "glyph" SET "tokens" = "character"."character" FROM "character" WHERE "glyph"."image" = "character"."user_data""#
+    /// );
+    /// ```
+    pub fn from<R>(&mut self, tbl_ref: R) -> &mut Self
+    where
+        R: IntoTableRef,
+    {
+        self.from_from(tbl_ref.into_table_ref())
+    }
+
+    #[allow(clippy::wrong_self_convention)]
+    fn from_from(&mut self, select: TableRef) -> &mut Self {
+        self.from.push(select);
         self
     }
 

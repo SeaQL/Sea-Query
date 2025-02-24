@@ -1,5 +1,6 @@
-use crate::*;
 use std::ops::Deref;
+
+use crate::*;
 
 const QUOTE: Quote = Quote(b'"', b'"');
 
@@ -11,7 +12,7 @@ pub trait QueryBuilder:
         ("?", false)
     }
 
-    /// Prefix for tuples in VALUES list (e.g. ROW for Mysql)
+    /// Prefix for tuples in VALUES list (e.g. ROW for MySQL)
     fn values_list_tuple_prefix(&self) -> &str {
         ""
     }
@@ -209,6 +210,8 @@ pub trait QueryBuilder:
             self.prepare_table_ref(table, sql);
         }
 
+        self.prepare_update_join(&update.from, &update.r#where, sql);
+
         write!(sql, " SET ").unwrap();
 
         update.values.iter().fold(true, |first, row| {
@@ -216,21 +219,64 @@ pub trait QueryBuilder:
                 write!(sql, ", ").unwrap()
             }
             let (col, v) = row;
-            col.prepare(sql.as_writer(), self.quote());
+            self.prepare_update_column(&update.table, &update.from, col, sql);
             write!(sql, " = ").unwrap();
             self.prepare_simple_expr(v, sql);
             false
         });
 
+        self.prepare_update_from(&update.from, sql);
+
         self.prepare_output(&update.returning, sql);
 
-        self.prepare_condition(&update.r#where, "WHERE", sql);
+        self.prepare_update_condition(&update.from, &update.r#where, sql);
 
         self.prepare_update_order_by(update, sql);
 
         self.prepare_update_limit(update, sql);
 
         self.prepare_returning(&update.returning, sql);
+    }
+
+    fn prepare_update_join(&self, _: &[TableRef], _: &ConditionHolder, _: &mut dyn SqlWriter) {
+        // MySQL specific
+    }
+
+    fn prepare_update_from(&self, from: &[TableRef], sql: &mut dyn SqlWriter) {
+        if from.is_empty() {
+            return;
+        }
+
+        write!(sql, " FROM ").unwrap();
+
+        from.iter().fold(true, |first, table_ref| {
+            if !first {
+                write!(sql, ", ").unwrap()
+            }
+
+            self.prepare_table_ref(table_ref, sql);
+
+            false
+        });
+    }
+
+    fn prepare_update_column(
+        &self,
+        _: &Option<Box<TableRef>>,
+        _: &[TableRef],
+        column: &DynIden,
+        sql: &mut dyn SqlWriter,
+    ) {
+        column.prepare(sql.as_writer(), self.quote());
+    }
+
+    fn prepare_update_condition(
+        &self,
+        _: &[TableRef],
+        condition: &ConditionHolder,
+        sql: &mut dyn SqlWriter,
+    ) {
+        self.prepare_condition(condition, "WHERE", sql);
     }
 
     /// Translate ORDER BY expression in [`UpdateStatement`].
