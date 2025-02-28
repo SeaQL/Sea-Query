@@ -92,4 +92,8 @@ impl QueryBuilder for SqliteQueryBuilder {
         // SQLite doesn't support inserting multiple rows with default values
         write!(sql, "DEFAULT VALUES").unwrap()
     }
+
+    fn prepare_if_else_statement(&self, _val: &Box<IfElseStatement>, _sql: &mut dyn SqlWriter) {
+        panic!("Sqlite doesn't support if-else statements")
+    }
 }

@@ -403,7 +403,34 @@ pub trait QueryBuilder:
             SimpleExpr::Constant(val) => {
                 self.prepare_constant(val, sql);
             }
+            SimpleExpr::IfElse(val) => {
+                self.prepare_if_else_statement(val, sql);
+            }
         }
+    }
+
+    /// Prefix of the ELSEIF (MySQL) vs ELSIF (Postgres) keyword
+    fn elseif_keyword_prefix(&self) -> &str {
+        panic!("ELSEIF/ELSIF keyword prefix not implemented for this backend");
+    }
+
+    fn prepare_if_else_statement(&self, val: &Box<IfElseStatement>, sql: &mut dyn SqlWriter) {
+        write!(sql, "IF ").unwrap();
+        self.prepare_simple_expr(&val.when, sql);
+        write!(sql, " THEN\n").unwrap();
+        self.prepare_simple_expr(&val.then, sql);
+        match &val.otherwise {
+            Some(SimpleExpr::IfElse(value)) => {
+                write!(sql, "\n{}", self.elseif_keyword_prefix()).unwrap();
+                self.prepare_if_else_statement(value, sql);
+            }
+            Some(otherwise) => {
+                write!(sql, "\nELSE\n").unwrap();
+                self.prepare_simple_expr(otherwise, sql);
+                write!(sql, "\nEND IF").unwrap();
+            }
+            None => write!(sql, "\nEND IF").unwrap(),
+        };
     }
 
     /// Translate [`CaseStatement`] into SQL statement.

@@ -176,6 +176,11 @@ impl QueryBuilder for PostgresQueryBuilder {
     fn if_null_function(&self) -> &str {
         "COALESCE"
     }
+
+    /// Prefix of the ELSIF (Postgres)
+    fn elseif_keyword_prefix(&self) -> &str {
+        "ELS"
+    }
 }
 
 fn is_pg_comparison(b: &BinOper) -> bool {
